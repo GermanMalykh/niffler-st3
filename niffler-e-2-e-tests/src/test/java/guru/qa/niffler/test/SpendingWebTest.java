@@ -19,7 +19,7 @@ import static com.codeborne.selenide.Selenide.$;
 public class SpendingWebTest {
     private final String USERNAME = "German";
     private final String PASSWORD = "12345";
-    private final String CATEGORY = "Рыбалка";
+    private final String CATEGORY_NAME = "Рыбалка";
     private final String DESCRIPTION = "Рыбалка на Ладоге";
     private final double AMOUNT = 14000.00;
 
@@ -38,13 +38,13 @@ public class SpendingWebTest {
     }
 
     @Category(
-            category = CATEGORY,
+            category = CATEGORY_NAME,
             username = USERNAME
     )
     @Spend(
             username = USERNAME,
             description = DESCRIPTION,
-            category = CATEGORY,
+            category = CATEGORY_NAME,
             amount = AMOUNT,
             currency = CurrencyValues.RUB
     )
@@ -67,7 +67,7 @@ public class SpendingWebTest {
 
     @AfterEach
     void cleaningData() {
-        SpendDb.removeCategory(CATEGORY);
+        SpendDb.removeCategory(CATEGORY_NAME);
     }
 
 }
