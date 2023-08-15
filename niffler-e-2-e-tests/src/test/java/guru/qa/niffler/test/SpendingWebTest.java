@@ -2,10 +2,12 @@ package guru.qa.niffler.test;
 
 import com.codeborne.selenide.Configuration;
 import com.codeborne.selenide.Selenide;
+import guru.qa.niffler.db.SpendDb;
 import guru.qa.niffler.jupiter.annotation.Category;
 import guru.qa.niffler.jupiter.annotation.Spend;
 import guru.qa.niffler.model.CurrencyValues;
 import guru.qa.niffler.model.SpendJson;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -19,7 +21,7 @@ public class SpendingWebTest {
     private final String PASSWORD = "12345";
     private final String CATEGORY = "Рыбалка";
     private final String DESCRIPTION = "Рыбалка на Ладоге";
-    private final Double AMOUNT = 14000.00;
+    private final double AMOUNT = 14000.00;
 
     static {
         Configuration.browser = "chrome";
@@ -62,4 +64,10 @@ public class SpendingWebTest {
                 .$$("tr")
                 .shouldHave(size(0));
     }
+
+    @AfterEach
+    void cleaningData() {
+        SpendDb.removeCategory(CATEGORY);
+    }
+
 }
