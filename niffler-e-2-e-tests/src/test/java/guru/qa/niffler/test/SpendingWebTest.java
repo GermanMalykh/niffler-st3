@@ -8,15 +8,18 @@ import guru.qa.niffler.jupiter.annotation.Category;
 import guru.qa.niffler.jupiter.annotation.Spend;
 import guru.qa.niffler.model.CurrencyValues;
 import guru.qa.niffler.model.SpendJson;
+import io.qameta.allure.AllureId;
 import io.qameta.allure.selenide.AllureSelenide;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static com.codeborne.selenide.CollectionCondition.size;
 import static com.codeborne.selenide.Condition.text;
 import static com.codeborne.selenide.Selectors.byText;
 import static com.codeborne.selenide.Selenide.$;
+import static io.qameta.allure.Allure.step;
 
 public class SpendingWebTest {
     private final String USERNAME = "German";
@@ -33,11 +36,15 @@ public class SpendingWebTest {
     @BeforeEach
     void doLogin() {
         SelenideLogger.addListener("allure", new AllureSelenide());
-        Selenide.open("http://127.0.0.1:3000/main");
-        $("a[href*='redirect']").click();
-        $("input[name='username']").setValue(USERNAME);
-        $("input[name='password']").setValue(PASSWORD);
-        $("button[type='submit']").click();
+        step("Переходим на главную страницу", () -> {
+            Selenide.open("http://127.0.0.1:3000/main");
+        });
+        step("Выполняем авторизацию", () -> {
+            $("a[href*='redirect']").click();
+            $("input[name='username']").setValue(USERNAME);
+            $("input[name='password']").setValue(PASSWORD);
+            $("button[type='submit']").click();
+        });
     }
 
     @Category(
@@ -51,26 +58,34 @@ public class SpendingWebTest {
             amount = AMOUNT,
             currency = CurrencyValues.RUB
     )
+
     @Test
+    @AllureId("400")
+    @DisplayName("Удаление записи по расходам из таблицы расходов")
     void spendingShouldBeDeletedAfterDeleteAction(SpendJson createdSpend) {
-        $(".spendings__content tbody")
-                .$$("tr")
-                .find(text(createdSpend.getDescription()))
-                .$$("td")
-                .first()
-                .scrollTo()
-                .click();
-
-        $(byText("Delete selected")).click();
-
-        $(".spendings__content tbody")
-                .$$("tr")
-                .shouldHave(size(0));
+        step("Выбираем запись в таблице расходов", () -> {
+            $(".spendings__content tbody")
+                    .$$("tr")
+                    .find(text(createdSpend.getDescription()))
+                    .$("td")
+                    .scrollTo()
+                    .click();
+        });
+        step("Удаляем выбранную запись", () -> {
+            $(byText("Delete selected")).click();
+        });
+        step("Проверяем что в таблице не осталось записей", () -> {
+            $(".spendings__content tbody")
+                    .$$("tr")
+                    .shouldHave(size(0));
+        });
     }
 
     @AfterEach
     void cleaningData() {
-        SpendDb.removeCategory(CATEGORY_NAME);
+        step("Удаляем категорию из БД", () -> {
+            SpendDb.removeCategory(CATEGORY_NAME);
+        });
     }
 
 }

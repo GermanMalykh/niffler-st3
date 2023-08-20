@@ -3,6 +3,7 @@ package guru.qa.niffler.jupiter.extension;
 import guru.qa.niffler.api.CategoryService;
 import guru.qa.niffler.jupiter.annotation.Category;
 import guru.qa.niffler.model.CategoryJson;
+import io.qameta.allure.AllureId;
 import okhttp3.OkHttpClient;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
@@ -33,7 +34,7 @@ public class CategoryExtension implements BeforeEachCallback, ParameterResolver 
             category.setCategory(annotation.category());
             category.setUsername(annotation.username());
             CategoryJson createdCategory = categoryService.addCategory(category).execute().body();
-            context.getStore(NAMESPACE).put("category", createdCategory);
+            context.getStore(NAMESPACE).put(getAllureId(context), createdCategory);
         }
     }
 
@@ -48,6 +49,14 @@ public class CategoryExtension implements BeforeEachCallback, ParameterResolver 
     public CategoryJson resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
         return extensionContext
                 .getStore(CategoryExtension.NAMESPACE)
-                .get("category", CategoryJson.class);
+                .get(getAllureId(extensionContext), CategoryJson.class);
+    }
+
+    private String getAllureId(ExtensionContext context) {
+        AllureId allureId = context.getRequiredTestMethod().getAnnotation(AllureId.class);
+        if (allureId == null) {
+            throw new IllegalStateException("Annotation @AllureId must be present!");
+        }
+        return allureId.value();
     }
 }

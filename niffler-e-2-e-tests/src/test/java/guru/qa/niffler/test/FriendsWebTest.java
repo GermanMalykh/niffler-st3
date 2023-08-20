@@ -9,12 +9,15 @@ import guru.qa.niffler.model.UserJson;
 import io.qameta.allure.AllureId;
 import io.qameta.allure.selenide.AllureSelenide;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static com.codeborne.selenide.CollectionCondition.sizeGreaterThan;
+import static com.codeborne.selenide.Condition.text;
 import static com.codeborne.selenide.Selenide.$;
 import static com.codeborne.selenide.Selenide.$$;
 import static guru.qa.niffler.jupiter.annotation.User.UserType.WITH_FRIENDS;
+import static io.qameta.allure.Allure.step;
 
 public class FriendsWebTest extends BaseWebTest {
 
@@ -26,34 +29,58 @@ public class FriendsWebTest extends BaseWebTest {
     @BeforeEach
     void doLogin(@User(userType = WITH_FRIENDS) UserJson userForTest) {
         SelenideLogger.addListener("allure", new AllureSelenide());
-        Selenide.open("http://127.0.0.1:3000/main");
-        $("a[href*='redirect']").click();
-        $("input[name='username']").setValue(userForTest.getUsername());
-        $("input[name='password']").setValue(userForTest.getPassword());
-        $("button[type='submit']").click();
+        step("Переходим на главную страницу", () -> {
+            Selenide.open("http://127.0.0.1:3000/main");
+        });
+        step("Выполняем авторизацию", () -> {
+            $("a[href*='redirect']").click();
+            $("input[name='username']").setValue(userForTest.getUsername());
+            $("input[name='password']").setValue(userForTest.getPassword());
+            $("button[type='submit']").click();
+        });
     }
 
     @Test
     @AllureId("100")
-    void friendShouldBeDisplayedInTable0(@User(userType = WITH_FRIENDS) UserJson userForTest) {
-        $("[data-tooltip-id='friends']").click();
-        $$("tbody tr").shouldHave(sizeGreaterThan(0));
-        $$("tbody tr td").last().shouldHave(Condition.text("You are friends"));
+    @DisplayName("Отображение друга в списке друзей")
+    void friendShouldBeDisplayedInTable0() {
+        step("Переходим к списку друзей", () -> {
+            $("[data-tooltip-id='friends']").click();
+        });
+        step("Проверяем, что таблица не пустая", () -> {
+            $$("tbody tr").shouldHave(sizeGreaterThan(0));
+        });
+        step("Проверяем, что у друга есть надпись маркера дружбы", () -> {
+            $$("tbody tr td").last().shouldHave(Condition.text("You are friends"));
+        });
     }
 
     @Test
     @AllureId("101")
-    void friendShouldBeDisplayedInTable1(@User(userType = WITH_FRIENDS) UserJson userForTest) {
-        $("[data-tooltip-id='friends']").click();
-        $$("tbody tr").shouldHave(sizeGreaterThan(0));
-        $$("tbody tr td").last().shouldHave(Condition.text("You are friends"));
+    @DisplayName("Отображение друга в списке друзей")
+    void friendShouldBeDisplayedInTable1() {
+        step("Переходим к списку друзей", () -> {
+            $("[data-tooltip-id='friends']").click();
+        });
+        step("Проверяем, что таблица не пустая", () -> {
+            $$("tbody tr").shouldHave(sizeGreaterThan(0));
+        });
+        step("Проверяем, что у друга есть надпись маркера дружбы", () -> {
+            $$("tbody tr td").last().shouldHave(Condition.text("You are friends"));
+        });
     }
 
     @Test
     @AllureId("102")
-    void friendShouldBeDisplayedInTable2(@User(userType = WITH_FRIENDS) UserJson userForTest) {
-        $("[data-tooltip-id='friends']").click();
-        $$("tbody tr").shouldHave(sizeGreaterThan(0));
-        $$("tbody tr td").last().shouldHave(Condition.text("You are friends"));
+    @DisplayName("Отображение друга в списке пользователей")
+    void friendShouldBeDisplayedInTable2() {
+        step("Переходим к списку пользователей", () -> {
+            $("[data-tooltip-id='people']").click();
+        });
+        step("Проверяем, что что у друга есть надпись маркера дружбы", () -> {
+            $$("table.abstract-table tr")
+                    .filterBy(text("You are friends"))
+                    .shouldHave(sizeGreaterThan(0));
+        });
     }
 }

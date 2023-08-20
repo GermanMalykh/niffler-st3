@@ -3,6 +3,7 @@ package guru.qa.niffler.jupiter.extension;
 import guru.qa.niffler.jupiter.annotation.User;
 import guru.qa.niffler.model.UserJson;
 import io.qameta.allure.AllureId;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.AfterTestExecutionCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
@@ -10,6 +11,7 @@ import org.junit.jupiter.api.extension.ParameterContext;
 import org.junit.jupiter.api.extension.ParameterResolutionException;
 import org.junit.jupiter.api.extension.ParameterResolver;
 
+import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.Map;
 import java.util.Queue;
@@ -39,18 +41,24 @@ public class UserQueueExtension implements BeforeEachCallback, AfterTestExecutio
 
     @Override
     public void beforeEach(ExtensionContext context) throws Exception {
-        Parameter[] parameters = context.getRequiredTestMethod().getParameters();
-        for (Parameter parameter : parameters) {
-            if (parameter.getType().isAssignableFrom(UserJson.class)) {
-                User parameterAnnotation = parameter.getAnnotation(User.class);
-                User.UserType userType = parameterAnnotation.userType();
-                Queue<UserJson> usersQueueByType = usersQueue.get(parameterAnnotation.userType());
-                UserJson candidateForTest = null;
-                while (candidateForTest == null) {
-                    candidateForTest = usersQueueByType.poll();
+        Method[] methods = context.getRequiredTestClass().getDeclaredMethods();
+        for (Method method : methods) {
+            if (method.isAnnotationPresent(BeforeEach.class)) {
+                Parameter[] parameters = method.getParameters();
+                for (Parameter parameter : parameters) {
+                    if (parameter.getType().isAssignableFrom(UserJson.class) && parameter.isAnnotationPresent(User.class)) {
+                        User parameterAnnotation = parameter.getAnnotation(User.class);
+                        User.UserType userType = parameterAnnotation.userType();
+                        Queue<UserJson> usersQueueByType = usersQueue.get(parameterAnnotation.userType());
+                        UserJson candidateForTest = null;
+                        while (candidateForTest == null) {
+                            candidateForTest = usersQueueByType.poll();
+                        }
+                        candidateForTest.setUserType(userType);
+                        context.getStore(NAMESPACE).put(getAllureId(context), candidateForTest);
+                        break;
+                    }
                 }
-                candidateForTest.setUserType(userType);
-                context.getStore(NAMESPACE).put(getAllureId(context), candidateForTest);
                 break;
             }
         }

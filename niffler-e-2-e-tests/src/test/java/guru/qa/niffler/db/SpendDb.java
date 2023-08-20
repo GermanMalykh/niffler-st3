@@ -12,8 +12,9 @@ public class SpendDb {
         dataSource.setUsername("postgres");
         dataSource.setPassword("secret");
 
-        System.out.println("Executing query: DELETE FROM categories WHERE category = '" + category + "';");
+        final String deleteCategorySql = "DELETE FROM categories WHERE category = '" + category + "';";
 
-        new JdbcTemplate(dataSource).execute("DELETE FROM categories WHERE category = '" + category + "';");
+        System.out.println("Executing query: " + deleteCategorySql);
+        new JdbcTemplate(dataSource).execute(deleteCategorySql);
     }
 }

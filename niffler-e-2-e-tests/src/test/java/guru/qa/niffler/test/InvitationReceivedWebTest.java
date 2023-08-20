@@ -8,6 +8,7 @@ import guru.qa.niffler.model.UserJson;
 import io.qameta.allure.AllureId;
 import io.qameta.allure.selenide.AllureSelenide;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static com.codeborne.selenide.CollectionCondition.size;
@@ -28,16 +29,21 @@ public class InvitationReceivedWebTest extends BaseWebTest {
     @BeforeEach
     void doLogin(@User(userType = INVITATION_RECEIVED) UserJson userForTest) {
         SelenideLogger.addListener("allure", new AllureSelenide());
-        Selenide.open("http://127.0.0.1:3000/main");
-        $("a[href*='redirect']").click();
-        $("input[name='username']").setValue(userForTest.getUsername());
-        $("input[name='password']").setValue(userForTest.getPassword());
-        $("button[type='submit']").click();
+        step("Переходим на главную страницу", () -> {
+            Selenide.open("http://127.0.0.1:3000/main");
+        });
+        step("Выполняем авторизацию", () -> {
+            $("a[href*='redirect']").click();
+            $("input[name='username']").setValue(userForTest.getUsername());
+            $("input[name='password']").setValue(userForTest.getPassword());
+            $("button[type='submit']").click();
+        });
     }
 
     @Test
     @AllureId("300")
-    void friendRequestShouldBeDisplayedInTable0(@User(userType = INVITATION_RECEIVED) UserJson userForTest) {
+    @DisplayName("Отображение новой заявки в друзья в списке друзей")
+    void friendRequestShouldBeDisplayedInTable0() {
         step("Переходим к списку друзей", () -> {
             $("[data-tooltip-id='friends']")
                     .$(".header__sign").shouldBe(visible).click();
@@ -45,15 +51,18 @@ public class InvitationReceivedWebTest extends BaseWebTest {
         step("Проверяем, что таблица не пустая", () -> {
             $$("tbody tr").shouldHave(sizeGreaterThan(0));
         });
-        step("Проверяем, что кнопки для принятия/отклонения заявки отображаются в интерфейсе", () -> {
+        step("Проверяем, что кнопка для принятия заявки отображается в интерфейсе", () -> {
             $("div[data-tooltip-id='submit-invitation']").shouldBe(visible);
+        });
+        step("Проверяем, что кнопка для отклонения заявки отображается в интерфейсе", () -> {
             $("div[data-tooltip-id='decline-invitation']").shouldBe(visible);
         });
     }
 
     @Test
     @AllureId("301")
-    void friendRequestShouldBeDisplayedInTable1(@User(userType = INVITATION_RECEIVED) UserJson userForTest) {
+    @DisplayName("Отображение новой заявки в друзья в списке друзей")
+    void friendRequestShouldBeDisplayedInTable1() {
         step("Переходим к списку друзей", () -> {
             $("[data-tooltip-id='friends']")
                     .$(".header__sign").shouldBe(visible).click();
@@ -61,21 +70,26 @@ public class InvitationReceivedWebTest extends BaseWebTest {
         step("Проверяем, что таблица не пустая", () -> {
             $$("tbody tr").shouldHave(sizeGreaterThan(0));
         });
-        step("Проверяем, что кнопки для принятия/отклонения заявки отображаются в интерфейсе", () -> {
+        step("Проверяем, что кнопка для принятия заявки отображается в интерфейсе", () -> {
             $("div[data-tooltip-id='submit-invitation']").shouldBe(visible);
+        });
+        step("Проверяем, что кнопка для отклонения заявки отображается в интерфейсе", () -> {
             $("div[data-tooltip-id='decline-invitation']").shouldBe(visible);
         });
     }
 
     @Test
     @AllureId("302")
-    void friendRequestShouldBeDisplayedInTable2(@User(userType = INVITATION_RECEIVED) UserJson userForTest) {
+    @DisplayName("Отображение новой заявки в друзья в списке пользователей")
+    void friendRequestShouldBeDisplayedInTable2() {
         step("Переходим к списку всех пользователей", () -> {
             $("[data-tooltip-id='people']").click();
         });
-        step("Проверяем, что кнопки для принятия/отклонения заявки отображаются в интерфейсе", () -> {
+        step("Проверяем, что кнопка для принятия заявки отображается в интерфейсе", () -> {
             $$("div[data-tooltip-id='submit-invitation']")
                     .shouldHave(size(1));
+        });
+        step("Проверяем, что кнопка для отклонения заявки отображается в интерфейсе", () -> {
             $$("div[data-tooltip-id='decline-invitation']")
                     .shouldHave(size(1));
         });
