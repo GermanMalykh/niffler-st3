@@ -1,4 +1,4 @@
-package guru.qa.niffler.jupiter;
+package guru.qa.niffler.jupiter.extension;
 
 import com.codeborne.selenide.Selenide;
 import com.codeborne.selenide.WebDriverRunner;
@@ -11,12 +11,14 @@ import org.openqa.selenium.TakesScreenshot;
 
 import java.io.ByteArrayInputStream;
 
+import static io.qameta.allure.Allure.step;
+
 public class BrowserExtension implements AfterEachCallback, TestExecutionExceptionHandler {
 
     @Override
     public void afterEach(ExtensionContext context) throws Exception {
         if (WebDriverRunner.hasWebDriverStarted()) {
-            Selenide.closeWebDriver();
+            step("Закрываем браузер", Selenide::closeWebDriver);
         }
     }
 

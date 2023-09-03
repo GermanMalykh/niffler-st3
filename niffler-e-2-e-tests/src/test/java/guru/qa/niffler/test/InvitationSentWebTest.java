@@ -1,6 +1,5 @@
 package guru.qa.niffler.test;
 
-import com.codeborne.selenide.Condition;
 import com.codeborne.selenide.Selenide;
 import com.codeborne.selenide.logevents.SelenideLogger;
 import guru.qa.niffler.jupiter.annotation.User;
@@ -15,13 +14,13 @@ import static com.codeborne.selenide.CollectionCondition.sizeGreaterThan;
 import static com.codeborne.selenide.Condition.text;
 import static com.codeborne.selenide.Selenide.$;
 import static com.codeborne.selenide.Selenide.$$;
-import static guru.qa.niffler.jupiter.annotation.User.UserType.WITH_FRIENDS;
+import static guru.qa.niffler.jupiter.annotation.User.UserType.INVITATION_SENT;
 import static io.qameta.allure.Allure.step;
 
-public class FriendsWebTest extends BaseWebTest {
+public class InvitationSentWebTest extends BaseWebTest {
 
     @BeforeEach
-    void doLogin(@User(userType = WITH_FRIENDS) UserJson userForTest) {
+    void doLogin(@User(userType = INVITATION_SENT) UserJson userForTest) {
         SelenideLogger.addListener("allure", new AllureSelenide());
         step("Переходим на главную страницу", () -> {
             Selenide.open("http://127.0.0.1:3000/main");
@@ -34,32 +33,18 @@ public class FriendsWebTest extends BaseWebTest {
         });
     }
 
-    @RepeatedTest(2)
-    @AllureId("100")
-    @DisplayName("Отображение друга в списке друзей")
-    void friendShouldBeDisplayedInFriendsTable() {
-        step("Переходим к списку друзей", () -> {
-            $("[data-tooltip-id='friends']").click();
-        });
-        step("Проверяем, что таблица не пустая", () -> {
-            $$("tbody tr").shouldHave(sizeGreaterThan(0));
-        });
-        step("Проверяем, что у друга есть надпись маркера дружбы", () -> {
-            $$("tbody tr td").last().shouldHave(Condition.text("You are friends"));
-        });
-    }
-
-    @RepeatedTest(2)
-    @AllureId("101")
-    @DisplayName("Отображение друга в списке пользователей")
-    void friendShouldBeDisplayedInPeopleTable() {
+    @RepeatedTest(3)
+    @AllureId("200")
+    @DisplayName("Отображение информации об отправленной заявке на дружбу")
+    void invitationShouldBeDisplayedInTable0() {
         step("Переходим к списку пользователей", () -> {
             $("[data-tooltip-id='people']").click();
         });
-        step("Проверяем, что что у друга есть надпись маркера дружбы", () -> {
+        step("Проверяем, что в таблице присутствует информация об отправленной заявке на дружбу", () -> {
             $$("table.abstract-table tr")
-                    .filterBy(text("You are friends"))
+                    .filterBy(text("Pending invitation"))
                     .shouldHave(sizeGreaterThan(0));
         });
     }
+
 }
