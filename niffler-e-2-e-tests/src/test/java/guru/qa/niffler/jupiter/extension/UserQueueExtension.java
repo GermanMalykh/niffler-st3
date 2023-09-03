@@ -11,10 +11,8 @@ import org.junit.jupiter.api.extension.ParameterContext;
 import org.junit.jupiter.api.extension.ParameterResolutionException;
 import org.junit.jupiter.api.extension.ParameterResolver;
 
-import java.lang.reflect.Executable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
-import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Queue;
@@ -44,18 +42,31 @@ public class UserQueueExtension implements BeforeEachCallback, AfterTestExecutio
 
     @Override
     public void beforeEach(ExtensionContext context) throws Exception {
-        Optional<Method> beforeEach = Arrays.stream(context.getRequiredTestClass().getDeclaredMethods())
-                .filter(method -> method.isAnnotationPresent(BeforeEach.class))
-                .findFirst();
-        Parameter[] parameters = beforeEach.map(Executable::getParameters)
-                .orElseGet(() -> context.getRequiredTestMethod().getParameters());
+
+        Optional<Method> beforeEachMethod = Optional.empty();
+        Method[] declaredMethods = context.getRequiredTestClass().getDeclaredMethods();
+        for (Method method : declaredMethods) {
+            if (method.isAnnotationPresent(BeforeEach.class)) {
+                beforeEachMethod = Optional.of(method);
+                break;
+            }
+        }
+
+        Parameter[] parameters;
+        if (beforeEachMethod.isPresent()) {
+            parameters = beforeEachMethod.get().getParameters();
+        } else {
+            parameters = context.getRequiredTestMethod().getParameters();
+        }
+
         Map<User.UserType, UserJson> candidatesForTest = new ConcurrentHashMap<>();
+
         for (Parameter parameter : parameters) {
             if (parameter.getType().isAssignableFrom(UserJson.class)) {
                 User parameterAnnotation = parameter.getAnnotation(User.class);
                 User.UserType userType = parameterAnnotation.userType();
                 Queue<UserJson> usersQueueByType = usersQueue.get(userType);
-                UserJson candidateForTest = null;
+                UserJson candidateForTest = usersQueueByType.poll();
                 while (candidateForTest == null) {
                     candidateForTest = usersQueueByType.poll();
                 }
@@ -63,15 +74,19 @@ public class UserQueueExtension implements BeforeEachCallback, AfterTestExecutio
                 candidatesForTest.put(userType, candidateForTest);
             }
         }
+
         context.getStore(NAMESPACE).put(getAllureId(context), candidatesForTest);
     }
 
     @Override
     public void afterTestExecution(ExtensionContext context) throws Exception {
         Map<User.UserType, UserJson> usersFromTest = context.getStore(NAMESPACE).get(getAllureId(context), Map.class);
-        for (User.UserType userType : usersFromTest.keySet()) {
-            usersQueue.get(userType).add(usersFromTest.get(userType));
-        }
+        usersFromTest.forEach((userType, userJson) -> {
+            Queue<UserJson> userQueue = usersQueue.get(userType);
+            if (userQueue != null) {
+                userQueue.add(userJson);
+            }
+        });
     }
 
     @Override
