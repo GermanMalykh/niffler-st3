@@ -1,6 +1,5 @@
 package guru.qa.niffler.test;
 
-import com.codeborne.selenide.Configuration;
 import com.codeborne.selenide.Selenide;
 import com.codeborne.selenide.logevents.SelenideLogger;
 import guru.qa.niffler.jupiter.annotation.User;
@@ -9,7 +8,7 @@ import io.qameta.allure.AllureId;
 import io.qameta.allure.selenide.AllureSelenide;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.RepeatedTest;
 
 import static com.codeborne.selenide.CollectionCondition.sizeGreaterThan;
 import static com.codeborne.selenide.Condition.text;
@@ -19,11 +18,6 @@ import static guru.qa.niffler.jupiter.annotation.User.UserType.INVITATION_SENT;
 import static io.qameta.allure.Allure.step;
 
 public class InvitationSentWebTest extends BaseWebTest {
-
-    static {
-        Configuration.browser = "firefox";
-        Configuration.browserSize = "1920x1080";
-    }
 
     @BeforeEach
     void doLogin(@User(userType = INVITATION_SENT) UserJson userForTest) {
@@ -39,7 +33,7 @@ public class InvitationSentWebTest extends BaseWebTest {
         });
     }
 
-    @Test
+    @RepeatedTest(3)
     @AllureId("200")
     @DisplayName("Отображение информации об отправленной заявке на дружбу")
     void invitationShouldBeDisplayedInTable0() {
@@ -53,31 +47,4 @@ public class InvitationSentWebTest extends BaseWebTest {
         });
     }
 
-    @Test
-    @AllureId("201")
-    @DisplayName("Отображение информации об отправленной заявке на дружбу")
-    void invitationShouldBeDisplayedInTable1() {
-        step("Переходим к списку пользователей", () -> {
-            $("[data-tooltip-id='people']").click();
-        });
-        step("Проверяем, что в таблице присутствует информация об отправленной заявке на дружбу", () -> {
-            $$("table.abstract-table tr")
-                    .filterBy(text("Pending invitation"))
-                    .shouldHave(sizeGreaterThan(0));
-        });
-    }
-
-    @Test
-    @AllureId("202")
-    @DisplayName("Отображение информации об отправленной заявке на дружбу")
-    void invitationShouldBeDisplayedInTable2() {
-        step("Переходим к списку пользователей", () -> {
-            $("[data-tooltip-id='people']").click();
-        });
-        step("Проверяем, что в таблице присутствует информация об отправленной заявке на дружбу", () -> {
-            $$("table.abstract-table tr")
-                    .filterBy(text("Pending invitation"))
-                    .shouldHave(sizeGreaterThan(0));
-        });
-    }
 }
